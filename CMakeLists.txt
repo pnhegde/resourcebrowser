@@ -19,6 +19,7 @@ include_directories(
 set( SRCS
   main.cpp
   resourcebrowser.cpp
+  linkresourcedialog.cpp
   #  browserview.cpp
 )
 

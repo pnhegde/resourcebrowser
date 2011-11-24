@@ -1,5 +1,5 @@
 #include "resourcebrowser.h"
-//#include "browserview.h"
+#include "linkresourcedialog.h"
 
 //KDE Includes
 #include <KXmlGuiWindow>
@@ -8,7 +8,10 @@
 #include <KStatusBar>
 #include <KAction>
 #include <KRun>
+#include <KDialog>
 
+
+#include <QMessageBox>
 #include <QListView>
 #include <QDockWidget>
 #include <QGridLayout>
@@ -18,6 +21,7 @@
 #include <QButtonGroup>
 #include <QToolButton>
 #include <QMenu>
+#include <QLabel>
 
 //Nepomuk Includes
 #include <Nepomuk/Query/Term>
@@ -81,8 +85,24 @@ void resourceBrowser::setupDockWidgets()
 
     dock = new QDockWidget("",this);
     dock->setAllowedAreas(Qt::LeftDockWidgetArea);
+    QWidget* buttonWidget = new QWidget(dock);
+    QVBoxLayout* buttonLayout = new QVBoxLayout(buttonWidget);
+    m_manualLinkResourceButton = new QPushButton(buttonWidget);
+    m_manualLinkResourceButton->setIcon(KIcon("insert-link"));
+    m_manualLinkResourceButton->setText(i18n("Link resources manually"));
+    m_manualLinkResourceButton->setEnabled(false);
+    m_manualLinkResourceButton->setFlat(true);
+    connect(m_manualLinkResourceButton,SIGNAL(clicked()),this,SLOT(slotManualLinkResources()));
+    m_removeDuplicateButton = new QPushButton(buttonWidget);
+    m_removeDuplicateButton->setIcon(KIcon("archive-remove"));
+    m_removeDuplicateButton->setText(i18n("Remove Duplicates"));
+    m_removeDuplicateButton->setFlat(true);
+    buttonLayout->addWidget(m_manualLinkResourceButton);
+    buttonLayout->addWidget(m_removeDuplicateButton);
+    dock->setWidget(buttonWidget);
     dock->setFeatures(QDockWidget::NoDockWidgetFeatures);
     addDockWidget(Qt::LeftDockWidgetArea,dock);
+
 
     dock = new QDockWidget(i18n("Resource Search "),this);
     Nepomuk::Utils::FacetWidget *searchWidget = new Nepomuk::Utils::FacetWidget(dock);
@@ -225,6 +245,7 @@ void resourceBrowser::slotLinkedResources()
 {
     m_linkedResourceViewModel->clear();
     m_recommendationViewModel->clear();
+    m_manualLinkResourceButton->setEnabled(true);
     Nepomuk::Resource resource = m_resourceViewModel->resourceForIndex(m_resourceView->selectionModel()->currentIndex() );
     QList<Nepomuk::Resource> relatedResourceList = resource.isRelatedOf();
     relatedResourceList.append(resource.isRelateds());
@@ -293,6 +314,12 @@ void resourceBrowser::slotShowResourceContextMenu(const QPoint &pos)
     QPoint globalPos = m_resourceView->mapToGlobal(pos);
     myMenu.addAction(m_openResourceAction);
     myMenu.exec(globalPos);
+}
+
+void resourceBrowser::slotManualLinkResources()
+{
+    LinkResourceDialog manualLinkDialog(m_resourceViewModel->resourceForIndex(m_resourceView->currentIndex()));
+    manualLinkDialog.exec();
 }
 
 

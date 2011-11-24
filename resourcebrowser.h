@@ -27,6 +27,7 @@
 #include <Nepomuk/Query/Query>
 #include <KAction>
 #include <QPoint>
+#include <QPushButton>
 class resourceBrowser : public KXmlGuiWindow
 {
     Q_OBJECT
@@ -50,6 +51,8 @@ private slots:
     void slotOpenRecommendedResource(QModelIndex);
     void slotOpenLinkedResource(QModelIndex);
     void slotShowResourceContextMenu(const QPoint&);
+    void slotManualLinkResources();
+
 
 private:
 //    browserView *m_view;
@@ -63,6 +66,8 @@ private:
     Nepomuk::Utils::SimpleResourceModel* m_linkedResourceViewModel;
     Nepomuk::Query::Query m_currentQuery;
     KAction* m_openResourceAction;
+    QPushButton* m_manualLinkResourceButton;
+    QPushButton* m_removeDuplicateButton;
 
 };
 
