@@ -25,6 +25,8 @@
 #include <Nepomuk/Utils/SimpleResourceModel>
 #include <Nepomuk/Query/Term>
 #include <Nepomuk/Query/Query>
+#include <KAction>
+#include <QPoint>
 class resourceBrowser : public KXmlGuiWindow
 {
     Q_OBJECT
@@ -44,6 +46,10 @@ private slots:
     void slotTriggerSearch(QString);
     void slotLinkedResources();
     void slotFilterApplied(Nepomuk::Query::Term);
+    void slotOpenResource(QModelIndex);
+    void slotOpenRecommendedResource(QModelIndex);
+    void slotOpenLinkedResource(QModelIndex);
+    void slotShowResourceContextMenu(const QPoint&);
 
 private:
 //    browserView *m_view;
@@ -56,6 +62,7 @@ private:
     Nepomuk::Utils::SimpleResourceModel* m_recommendationViewModel;
     Nepomuk::Utils::SimpleResourceModel* m_linkedResourceViewModel;
     Nepomuk::Query::Query m_currentQuery;
+    KAction* m_openResourceAction;
 
 };
 

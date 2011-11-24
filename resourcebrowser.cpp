@@ -7,6 +7,7 @@
 #include <KIcon>
 #include <KStatusBar>
 #include <KAction>
+#include <KRun>
 
 #include <QListView>
 #include <QDockWidget>
@@ -16,7 +17,7 @@
 #include <QDebug>
 #include <QButtonGroup>
 #include <QToolButton>
-
+#include <QMenu>
 
 //Nepomuk Includes
 #include <Nepomuk/Query/Term>
@@ -67,6 +68,7 @@ void resourceBrowser::setupDockWidgets()
     m_recommendationView = new QListView(dock);
     dock->setWidget(m_recommendationView);
     addDockWidget(Qt::RightDockWidgetArea,dock);
+
     //TODO::if locked -> do this
     //dock->setFeatures(QDockWidget::NoDockWidgetFeatures);
 
@@ -105,7 +107,9 @@ void resourceBrowser::buildCentralUI()
     connect(m_searchBox,SIGNAL(textChanged(QString)),this,SLOT(slotTriggerSearch(QString)));
     m_resourceView = new QListView(m_mainWidget);
     gLayout->addWidget(m_searchBox);
-
+    m_resourceView->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(m_resourceView,SIGNAL(customContextMenuRequested(QPoint)),this,SLOT(slotShowResourceContextMenu(QPoint&)));
+    connect(m_resourceView,SIGNAL(doubleClicked(QModelIndex)),this,SLOT(slotOpenResource(QModelIndex)));
     QHBoxLayout* searchFilterLayout = new QHBoxLayout(m_mainWidget);
     QToolButton* resourceNameButton = new QToolButton(m_mainWidget);
     resourceNameButton->setText(i18n("Name"));
@@ -124,6 +128,8 @@ void resourceBrowser::buildCentralUI()
     gLayout->addLayout(searchFilterLayout);
 
     gLayout->addWidget(m_resourceView);
+
+
     setCentralWidget(m_mainWidget);
 
 }
@@ -134,6 +140,7 @@ void resourceBrowser::setupActions()
 ////    showm_m_searchBoxAction->setShortcut(Qt::CTRL + Qt::Key_F);
 //    connect(show,SIGNAL(triggered()),m_searchBox,SLOT(slotTriggerSearch()));
 
+
 }
 
 void resourceBrowser::setupModels()
@@ -143,9 +150,57 @@ void resourceBrowser::setupModels()
     connect(m_resourceView->selectionModel(),SIGNAL(selectionChanged(QItemSelection,QItemSelection)),this,SLOT(slotLinkedResources()));
     m_recommendationViewModel = new Nepomuk::Utils::SimpleResourceModel(this);
     m_recommendationView->setModel(m_recommendationViewModel);
+    connect(m_recommendationView,SIGNAL(doubleClicked(QModelIndex)),this,SLOT(slotOpenRecommendedResource(QModelIndex)));
     m_linkedResourceViewModel = new Nepomuk::Utils::SimpleResourceModel(this);
     m_linkedResourceView->setModel(m_linkedResourceViewModel);
+    connect(m_linkedResourceView,SIGNAL(doubleClicked(QModelIndex)),this,SLOT(slotOpenLinkedResource(QModelIndex)));
+
 }
+void resourceBrowser::slotOpenResource(QModelIndex selectedResource)
+{/*
+    KUrl url = (m_linkedResourceViewModel->resourceForIndex(m_linkedResourceView->selectionModel()->currentIndex())).property(Nepomuk::Vocabulary::NIE::url()).toString();
+    if(url.isEmpty()) {
+       url= (m_recommendationViewModel->resourceForIndex(m_recommendationView->selectionModel()->currentIndex())).property(Nepomuk::Vocabulary::NIE::url()).toString();
+    }
+    if(url.isEmpty()) {
+        url= (m_resourceViewModel->resourceForIndex(m_resourceView->selectionModel()->currentIndex())).property(Nepomuk::Vocabulary::NIE::url()).toString();
+    }*/
+    m_resourceView->selectionModel()->setCurrentIndex(selectedResource,QItemSelectionModel::NoUpdate);
+    KUrl url = (m_resourceViewModel->resourceForIndex(
+                    m_resourceView->selectionModel()->currentIndex())).property(Nepomuk::Vocabulary::NIE::url()).toString();
+    qDebug()<<url;
+    if(!url.isEmpty()) {
+        new KRun(url,this);
+    }
+    //krun(url);
+}
+void resourceBrowser::slotOpenRecommendedResource(QModelIndex selectedResource)
+{
+    m_recommendationView->selectionModel()->setCurrentIndex(selectedResource,QItemSelectionModel::NoUpdate);
+    Nepomuk::Resource currentResource = (m_recommendationViewModel->resourceForIndex(
+                                             m_recommendationView->selectionModel()->currentIndex()));
+    KUrl url = currentResource.property(Nepomuk::Vocabulary::NIE::url()).toString();
+    qDebug()<<url<<"usage count="<<currentResource.usageCount();
+    if(!url.isEmpty()) {
+        new KRun(url,this);
+        currentResource.increaseUsageCount();
+    }
+}
+
+void resourceBrowser::slotOpenLinkedResource(QModelIndex selectedResource)
+{
+
+    m_linkedResourceView->selectionModel()->setCurrentIndex(selectedResource,QItemSelectionModel::NoUpdate);
+    Nepomuk::Resource currentResource = (m_linkedResourceViewModel->resourceForIndex(
+                                              m_linkedResourceView->selectionModel()->currentIndex()));
+    KUrl url = currentResource.property(Nepomuk::Vocabulary::NIE::url()).toString();
+    qDebug()<<url<<"usagecount="<<currentResource.usageCount();
+    if(!url.isEmpty()) {
+        new KRun(url,this);
+        currentResource.increaseUsageCount();
+    }
+}
+
 
 void resourceBrowser::populateDefaultResources()
 {
@@ -227,6 +282,18 @@ QList<Nepomuk::Resource> resourceBrowser::contentResourceSearch(const QString st
      return resource;
 
  }
+void resourceBrowser::slotShowResourceContextMenu(const QPoint &pos)
+{
+    m_openResourceAction = new KAction(this);
+    m_openResourceAction->setText(i18n("&Open "));
+    //m_openResourceAction->setIcon(KIcon("edit-delete"));
+   // connect (m_openResourceAction, SIGNAL( triggered(bool) ), this, SLOT( slotOpenResource() ) );
+
+    QMenu myMenu;
+    QPoint globalPos = m_resourceView->mapToGlobal(pos);
+    myMenu.addAction(m_openResourceAction);
+    myMenu.exec(globalPos);
+}
 
 
 
