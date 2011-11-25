@@ -1,5 +1,6 @@
-/***************************************************************************
- *   Copyright (C) 2011 by Phaneendra Hegde <pnh.pes@gmail.com>                            *
+/*
+ ***************************************************************************
+ *   Copyright (C) 2011 by Phaneendra Hegde <phaneendra.hegde@gmail.com>   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -15,9 +16,13 @@
  *   along with this program; if not, write to the                         *
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA .        *
- ***************************************************************************/
+ ***************************************************************************
+*/
 
+//Local includes
 #include "resourcebrowser.h"
+
+//KDE includes
 #include <KDE/KApplication>
 #include <KDE/KAboutData>
 #include <KDE/KCmdLineArgs>
@@ -57,7 +62,6 @@ int main(int argc, char **argv)
         KCmdLineArgs *args = KCmdLineArgs::parsedArgs();
         if (args->count() == 0)
         {
-            //nepomukrecommendation *widget = new nepomukrecommendation;
             widget->show();
         }
         else
@@ -65,7 +69,6 @@ int main(int argc, char **argv)
             int i = 0;
             for (; i < args->count(); i++)
             {
-                //nepomukrecommendation *widget = new nepomukrecommendation;
                 widget->show();
             }
         }

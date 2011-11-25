@@ -1,20 +1,68 @@
+/*
+  ***************************************************************************
+  *   Copyright (C) 2011 by Phaneendra Hegde <phaneendra.hegde@gmail.com>   *
+  *                                                                         *
+  *   This program is free software; you can redistribute it and/or modify  *
+  *   it under the terms of the GNU General Public License as published by  *
+  *   the Free Software Foundation; either version 2 of the License, or     *
+  *   (at your option) any later version.                                   *
+  *                                                                         *
+  *   This program is distributed in the hope that it will be useful,       *
+  *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
+  *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
+  *   GNU General Public License for more details.                          *
+  *                                                                         *
+  *   You should have received a copy of the GNU General Public License     *
+  *   along with this program; if not, write to the                         *
+  *   Free Software Foundation, Inc.,                                       *
+  *   51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA .        *
+  ***************************************************************************
+*/
+
+//Local includes
 #include "linkresourcedialog.h"
 
+//Qt includes
 #include <QLabel>
 #include <QVBoxLayout>
-#include <QListView>
+#include <QListWidget>
+#include <QPushButton>
+#include <QCheckBox>
+#include <QListWidgetItem>
 
+//KDE includes
 #include <KLocale>
 #include <KIcon>
 #include <KEditListBox>
+
+/*//Nepomuk Includes
+#include <Nepomuk/Query/Term>
+#include <Nepomuk/Query/Result>
+#include <Nepomuk/Query/ResourceTypeTerm>
+#include <Nepomuk/Query/ComparisonTerm>
+#include <Nepomuk/Query/LiteralTerm>
+#include <Nepomuk/Query/QueryServiceClient>
+#include <Nepomuk/Vocabulary/PIMO>
+#include <Nepomuk/Vocabulary/NCO>
+#include <Nepomuk/Vocabulary/NFO>
+#include <Soprano/Vocabulary/NAO>
+#include <Nepomuk/Vocabulary/NIE>
+#include <Nepomuk/Query/QueryParser>
+#include <Nepomuk/Variant>
+#include <Nepomuk/Tag>
+#include<Nepomuk/Utils/FacetWidget>
+#include <Soprano/QueryResultIterator>
+#include <Soprano/Model>
+#include <Nepomuk/Query/AndTerm>
 #include <Nepomuk/File>
-#include <QPushButton>
+#include <Nepomuk/Utils/SimpleResourceModel>*/
+
 
 LinkResourceDialog::LinkResourceDialog(Nepomuk::Resource resource,QWidget* parent):KDialog(parent)
 {
     setWindowTitle(i18n("Resource Link Dialog"));
     setWindowIcon(KIcon("nepomuk"));
-    setButtonText(Ok,i18n("&Done"));
+    setButtonText(Ok,i18n("&Link"));
 
     QVBoxLayout* vbLayout = new QVBoxLayout(mainWidget());
     QLabel *resourceName = new QLabel(mainWidget());
@@ -23,15 +71,18 @@ LinkResourceDialog::LinkResourceDialog(Nepomuk::Resource resource,QWidget* paren
     m_resourceSearch->setPlaceholderText(i18n("Search for resources"));
     vbLayout->addWidget(resourceName);
     vbLayout->addWidget(m_resourceSearch);
-    QListView* resourceLinkView = new QListView(mainWidget());
-    vbLayout->addWidget(resourceLinkView);
-    QPushButton* unlinkButton = new QPushButton(resourceLinkView->viewport());
-    unlinkButton->setIcon(KIcon("edit-delete"));
-
+    QListWidget* resourceList = new QListWidget(mainWidget());
+    vbLayout->addWidget(resourceList);
+    QListWidgetItem* item = new QListWidgetItem("PNH",resourceList);
+    item->setCheckState(Qt::Checked);
+    item->setIcon(KIcon("nepomuk"));
+    resourceList->setViewMode(resourceList->IconMode);
 
 }
+
 
 LinkResourceDialog::~LinkResourceDialog()
 {
-
 }
+
+#include "linkresourcedialog.moc"

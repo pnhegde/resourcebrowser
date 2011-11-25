@@ -1,5 +1,6 @@
-/****************************************************************************
-  *   Copyright (C) 2011 by Phaneendra Hegde <pnh.pes@gmail.com>            *
+/*
+  ***************************************************************************
+  *   Copyright (C) 2011 by Phaneendra Hegde <phaneendra.hegde@gmail.com>   *
   *                                                                         *
   *   This program is free software; you can redistribute it and/or modify  *
   *   it under the terms of the GNU General Public License as published by  *
@@ -15,19 +16,28 @@
   *   along with this program; if not, write to the                         *
   *   Free Software Foundation, Inc.,                                       *
   *   51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA .        *
-  ***************************************************************************/
+  ***************************************************************************
+*/
+
 #ifndef RESOURCEBROWSER_H
 #define RESOURCEBROWSER_H
-//#include "browserview.h"
-#include <KXmlGuiWindow>
+
+//Qt includes
 #include <QListView>
+#include <QPoint>
+#include <QPushButton>
+#include <QToolButton>
+
+//KDE includes
+#include <KXmlGuiWindow>
+#include <KAction>
 #include <KLineEdit>
+
+//Nepomuk includes
 #include <Nepomuk/Utils/SimpleResourceModel>
 #include <Nepomuk/Query/Term>
 #include <Nepomuk/Query/Query>
-#include <KAction>
-#include <QPoint>
-#include <QPushButton>
+
 class resourceBrowser : public KXmlGuiWindow
 {
     Q_OBJECT
@@ -41,33 +51,39 @@ private:
     void setupActions();
     void setupModels();
     void populateDefaultResources();
-    QList<Nepomuk::Resource> contentResourceSearch(const QString str);
+    QList<Nepomuk::Resource> contentResourceSearch( const QString str );
+    QList<Nepomuk::Resource> nameResourceSearch( const QString str );
+    QList<Nepomuk::Resource> typeResourceSearch( const QString str );
 
 private slots:
-    void slotTriggerSearch(QString);
+    void slotTriggerSearch( QString );
     void slotLinkedResources();
-    void slotFilterApplied(Nepomuk::Query::Term);
-    void slotOpenResource(QModelIndex);
-    void slotOpenRecommendedResource(QModelIndex);
-    void slotOpenLinkedResource(QModelIndex);
-    void slotShowResourceContextMenu(const QPoint&);
+    void slotFilterApplied( Nepomuk::Query::Term );
+    void slotOpenResource( QModelIndex );
+    void slotOpenRecommendedResource( QModelIndex );
+    void slotOpenLinkedResource( QModelIndex );
+    void slotShowResourceContextMenu( const QPoint& );
     void slotManualLinkResources();
 
-
 private:
-//    browserView *m_view;
+
     QWidget* m_mainWidget;
     QListView* m_resourceView;
     QListView* m_recommendationView;
     QListView* m_linkedResourceView;
+    QPushButton* m_manualLinkResourceButton;
+    QPushButton* m_removeDuplicateButton;
+    QToolButton* m_resourceNameButton;
+    QToolButton* m_resourceContentButton;
+    QToolButton* m_resourceTypeButton;
+
     KLineEdit* m_searchBox;
+    KAction* m_openResourceAction;
+
     Nepomuk::Utils::SimpleResourceModel* m_resourceViewModel;
     Nepomuk::Utils::SimpleResourceModel* m_recommendationViewModel;
     Nepomuk::Utils::SimpleResourceModel* m_linkedResourceViewModel;
     Nepomuk::Query::Query m_currentQuery;
-    KAction* m_openResourceAction;
-    QPushButton* m_manualLinkResourceButton;
-    QPushButton* m_removeDuplicateButton;
 
 };
 
