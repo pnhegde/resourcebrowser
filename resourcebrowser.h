@@ -54,6 +54,7 @@ private:
     QList<Nepomuk::Resource> contentResourceSearch( const QString str );
     QList<Nepomuk::Resource> nameResourceSearch( const QString str );
     QList<Nepomuk::Resource> typeResourceSearch( const QString str );
+    void mySort(QList<Nepomuk::Resource> &resources);
 
 private slots:
     void slotTriggerSearch( QString );

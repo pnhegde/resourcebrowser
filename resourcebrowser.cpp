@@ -258,6 +258,7 @@ void resourceBrowser::slotLinkedResources()
     QList<Nepomuk::Resource> relatedResourceList = resource.isRelatedOf();
     relatedResourceList.append(resource.isRelateds());
     if(! relatedResourceList.isEmpty() ) {
+        mySort(relatedResourceList);
         m_linkedResourceViewModel->setResources(relatedResourceList);
     }
     if(!resource.label().isEmpty()) {
@@ -294,6 +295,7 @@ void resourceBrowser::slotFilterApplied(Nepomuk::Query::Term term)
     Q_FOREACH( const Nepomuk::Query::Result& result,results) {
         resources.append( result.resource() );
     }
+    mySort(resources);
     m_resourceViewModel->setResources( resources );
 }
 
@@ -329,15 +331,30 @@ void resourceBrowser::populateDefaultResources()
 
         m_currentQuery.setTerm(term);
         m_currentQuery = m_currentQuery || Nepomuk::Query::ResourceTypeTerm(Nepomuk::Vocabulary::PIMO::Person() );
-        m_currentQuery.setLimit( 25 );
+        m_currentQuery = m_currentQuery || Nepomuk::Query::ResourceTypeTerm(Nepomuk::Vocabulary::NFO::PaginatedTextDocument() );
+        m_currentQuery = m_currentQuery || Nepomuk::Query::ResourceTypeTerm(Nepomuk::Vocabulary::NFO::Presentation() );
+        m_currentQuery.setLimit( 35 );
         QList<Nepomuk::Query::Result> results = Nepomuk::Query::QueryServiceClient::syncQuery( m_currentQuery );
         QList<Nepomuk::Resource> resources;
         Q_FOREACH( const Nepomuk::Query::Result& result,results) {
             resources.append( result.resource() );
         }
+        mySort(resources);
         m_resourceViewModel->setResources( resources );
 }
 
+void resourceBrowser::mySort(QList<Nepomuk::Resource> &resources)
+{
+    for (int i=0; i<resources.size()-1; i++) {
+        for (int j=0; j<resources.size()-1; j++) {
+            if (resources.at(j).usageCount() < resources.at(j+1).usageCount()) {
+                Nepomuk::Resource temp = resources.at(j);
+                resources.replace(j,resources.at(j+1));
+                resources.replace(j+1,temp);
+            }
+        }
+    }
+}
 
 QList<Nepomuk::Resource> resourceBrowser::contentResourceSearch(const QString str)
  {
@@ -358,29 +375,23 @@ QList<Nepomuk::Resource> resourceBrowser::contentResourceSearch(const QString st
      Q_FOREACH( const Nepomuk::Query::Result& result, results ) {
          resource.append( result.resource() );
      }
+     mySort(resource);
      return resource;
  }
 
 
 QList<Nepomuk::Resource> resourceBrowser::nameResourceSearch(const QString str)
 {
-    Nepomuk::Query::ComparisonTerm linkTerm(Soprano::Vocabulary::NAO::prefLabel(), Nepomuk::Query::LiteralTerm(str));
+    Nepomuk::Query::ComparisonTerm linkTerm( Nepomuk::Vocabulary::NFO::fileName(), Nepomuk::Query::LiteralTerm(str));
 
-   //linkTerm.setVariableName(QLatin1String("text"));
-    //Nepomuk::Query::Query query(linkTerm);
     m_currentQuery.setTerm(linkTerm);
-
-    m_currentQuery =  m_currentQuery || Nepomuk::Query::ResourceTypeTerm(Nepomuk::Vocabulary::NFO::fileName());
-
-//     if(limit != 0) {
-//         query.setLimit(limit);
-//     }
-    m_currentQuery.setLimit(25);
+    m_currentQuery.setLimit(50);
     QList<Nepomuk::Query::Result>results = Nepomuk::Query::QueryServiceClient::syncQuery( m_currentQuery );
     QList<Nepomuk::Resource> resource;
     Q_FOREACH( const Nepomuk::Query::Result& result, results ) {
         resource.append( result.resource() );
     }
+    mySort(resource);
     return resource;
 }
 
@@ -392,32 +403,35 @@ QList<Nepomuk::Resource> resourceBrowser:: typeResourceSearch(const QString str)
         qDebug()<<"Found";
         linkTerm =  Nepomuk::Query::ResourceTypeTerm( Nepomuk::Vocabulary::NFO::Audio() );
     }
-
     else if(str.contains("photo") || str.contains("picture") || str.contains("image")) {
         qDebug()<<"Found";
         linkTerm =  Nepomuk::Query::ResourceTypeTerm( Nepomuk::Vocabulary::NFO::Image() );
     }
+    else if(str.contains("archive") || str.contains("compressed") ) {
+        qDebug()<<"Found";
+        linkTerm =  Nepomuk::Query::ResourceTypeTerm( Nepomuk::Vocabulary::NFO::Archive() );
+    }
+    else if(str.contains("pdf")) {
+        qDebug()<<"Found";
+        linkTerm =  Nepomuk::Query::ResourceTypeTerm( Nepomuk::Vocabulary::NFO::PaginatedTextDocument() );
+    }
+    else if(str.contains("ppt") || str.contains("presentation")) {
+        qDebug()<<"Found";
+        linkTerm =  Nepomuk::Query::ResourceTypeTerm( Nepomuk::Vocabulary::NFO::Presentation() );
+    }
+    else if(str.contains("text") || str.contains("txt") || str.contains("document") || str.contains("doc")  ) {
+        qDebug()<<"Found";
+        linkTerm =  Nepomuk::Query::ResourceTypeTerm( Nepomuk::Vocabulary::NFO::Document() );
+    }
 
     m_currentQuery.setTerm(linkTerm);
-    /*
-    else {
-        linkTerm = Nepomuk::Query::ComparisonTerm(Nepomuk::Vocabulary::NFO::Archive(), Nepomuk::Query::LiteralTerm(str));
-    }*/
-   //linkTerm.setVariableName(QLatin1String("text"));
-    //Nepomuk::Query::Query query(linkTerm);
-
-
-    //query.addRequestProperty(Nepomuk::Query::Query::RequestProperty(Nepomuk::Vocabulary::NIE::lastModified()));
-
-//     if(limit != 0) {
-//         query.setLimit(limit);
-//     }
     m_currentQuery.setLimit(25);
     QList<Nepomuk::Query::Result>results = Nepomuk::Query::QueryServiceClient::syncQuery( m_currentQuery );
     QList<Nepomuk::Resource> resource;
     Q_FOREACH( const Nepomuk::Query::Result& result, results ) {
         resource.append( result.resource() );
     }
+    mySort(resource);
     return resource;
 }
 
