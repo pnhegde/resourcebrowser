@@ -37,7 +37,11 @@ public:
     LinkResourceDialog(Nepomuk::Resource resource,QWidget* parent=0);
     virtual ~LinkResourceDialog();
 private:
+    void setUpGui();
+    QList<Nepomuk::Resource> getLinkedResources();
+private:
     KLineEdit* m_resourceSearch;
+    Nepomuk::Resource m_mainResource;
 };
 
 #endif // LINKRESOURCEDIALOG_H

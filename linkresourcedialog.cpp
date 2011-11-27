@@ -63,23 +63,36 @@ LinkResourceDialog::LinkResourceDialog(Nepomuk::Resource resource,QWidget* paren
     setWindowTitle(i18n("Resource Link Dialog"));
     setWindowIcon(KIcon("nepomuk"));
     setButtonText(Ok,i18n("&Link"));
+    m_mainResource = resource;
+    setUpGui();
+}
 
+
+void LinkResourceDialog::setUpGui()
+{
     QVBoxLayout* vbLayout = new QVBoxLayout(mainWidget());
     QLabel *resourceName = new QLabel(mainWidget());
-    resourceName->setText(resource.genericLabel()+" : "+resource.className());
+    resourceName->setText(m_mainResource.genericLabel()+" : "+m_mainResource.className());
     m_resourceSearch = new KLineEdit(mainWidget());
     m_resourceSearch->setPlaceholderText(i18n("Search for resources"));
     vbLayout->addWidget(resourceName);
     vbLayout->addWidget(m_resourceSearch);
     QListWidget* resourceList = new QListWidget(mainWidget());
     vbLayout->addWidget(resourceList);
-    QListWidgetItem* item = new QListWidgetItem("PNH",resourceList);
-    item->setCheckState(Qt::Checked);
-    item->setIcon(KIcon("nepomuk"));
     resourceList->setViewMode(resourceList->IconMode);
 
+    Q_FOREACH(Nepomuk::Resource resource, getLinkedResources()) {
+        QListWidgetItem* item = new QListWidgetItem(resource.genericLabel(),resourceList);
+        item->setCheckState(Qt::Checked);
+        item->setIcon(KIcon("nepomuk"));
+    }
 }
 
+
+QList<Nepomuk::Resource> LinkResourceDialog::getLinkedResources()
+{
+    return (m_mainResource.isRelatedOf());
+}
 
 LinkResourceDialog::~LinkResourceDialog()
 {
