@@ -270,12 +270,15 @@ void resourceBrowser::slotLinkedResources()
 void resourceBrowser::slotTriggerSearch( const QString str)
 {
     if(!str.isEmpty() && m_resourceContentButton->isChecked()) {
+        m_resourceViewModel->clear();
         m_resourceViewModel->setResources(contentResourceSearch(str));
     }
     else if(!str.isEmpty() && m_resourceNameButton->isChecked()) {
+        m_resourceViewModel->clear();
         m_resourceViewModel->setResources(nameResourceSearch(str));
     }
     else if(!str.isEmpty() && m_resourceTypeButton->isChecked()){
+        m_resourceViewModel->clear();
         m_resourceViewModel->setResources(typeResourceSearch(str));
     }
     else {
@@ -382,7 +385,16 @@ QList<Nepomuk::Resource> resourceBrowser::contentResourceSearch(const QString st
 
 QList<Nepomuk::Resource> resourceBrowser::nameResourceSearch(const QString str)
 {
-    Nepomuk::Query::ComparisonTerm linkTerm( Nepomuk::Vocabulary::NFO::fileName(), Nepomuk::Query::LiteralTerm(str));
+    //Nepomuk::Query::ComparisonTerm linkTerm( Nepomuk::Vocabulary::NFO::fileName(), Nepomuk::Query::LiteralTerm(str));
+
+    QString regex = QRegExp::escape(str);
+           regex.replace("\\*", QLatin1String(".*"));
+           regex.replace("\\?", QLatin1String("."));
+           regex.replace("\\", "\\\\");
+     Nepomuk::Query::ComparisonTerm linkTerm(
+                       Nepomuk::Vocabulary::NFO::fileName(),
+                       Nepomuk::Query::LiteralTerm(regex),
+                       Nepomuk::Query::ComparisonTerm::Regexp);
 
     m_currentQuery.setTerm(linkTerm);
     m_currentQuery.setLimit(50);
