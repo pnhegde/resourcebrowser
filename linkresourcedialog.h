@@ -23,6 +23,7 @@
 #ifndef LINKRESOURCEDIALOG_H
 #define LINKRESOURCEDIALOG_H
 
+#include <QListWidget>
 //KDE includes
 #include <KDialog>
 #include <KLineEdit>
@@ -39,8 +40,12 @@ public:
 private:
     void setUpGui();
     QList<Nepomuk::Resource> getLinkedResources();
+private slots:
+     void slotTriggerSearch( QString );
+     void slotLinkResources();
 private:
     KLineEdit* m_resourceSearch;
+    QListWidget* m_resourceList;
     Nepomuk::Resource m_mainResource;
 };
 

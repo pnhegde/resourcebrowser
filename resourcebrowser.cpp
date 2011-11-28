@@ -56,6 +56,7 @@
 #include <Nepomuk/Vocabulary/NCO>
 #include <Nepomuk/Vocabulary/NFO>
 #include <Nepomuk/Query/AndTerm>
+#include <Nepomuk/Query/OrTerm>
 #include <Nepomuk/Vocabulary/NIE>
 #include <Nepomuk/Query/QueryParser>
 #include <Nepomuk/Variant>
@@ -131,6 +132,7 @@ void resourceBrowser::setupDockWidgets()
     searchWidget->addFacet(Nepomuk::Utils::Facet::createDateFacet(searchWidget));
     searchWidget->addFacet(Nepomuk::Utils::Facet::createTypeFacet(searchWidget));
     searchWidget->addFacet(Nepomuk::Utils::Facet::createRatingFacet(searchWidget));
+    searchWidget->addFacet(Nepomuk::Utils::Facet::createPriorityFacet(searchWidget));
     connect(searchWidget,SIGNAL(queryTermChanged(Nepomuk::Query::Term)),this,SLOT(slotFilterApplied(Nepomuk::Query::Term)));
     dock->setWidget(searchWidget);
     addDockWidget(Qt::LeftDockWidgetArea,dock);
@@ -391,14 +393,18 @@ QList<Nepomuk::Resource> resourceBrowser::nameResourceSearch(const QString str)
            regex.replace("\\*", QLatin1String(".*"));
            regex.replace("\\?", QLatin1String("."));
            regex.replace("\\", "\\\\");
-     Nepomuk::Query::ComparisonTerm linkTerm(
+    Nepomuk::Query::ComparisonTerm linkTerm(
                        Nepomuk::Vocabulary::NFO::fileName(),
                        Nepomuk::Query::LiteralTerm(regex),
                        Nepomuk::Query::ComparisonTerm::Regexp);
-
-    m_currentQuery.setTerm(linkTerm);
+    Nepomuk::Query::ComparisonTerm temp(Soprano::Vocabulary::NAO::prefLabel(),Nepomuk::Query::LiteralTerm(str));
+    //Nepomuk::Query::Query test(temp);
+    Nepomuk::Query::OrTerm query( linkTerm,temp );
+    m_currentQuery.setTerm(query);
     m_currentQuery.setLimit(50);
+
     QList<Nepomuk::Query::Result>results = Nepomuk::Query::QueryServiceClient::syncQuery( m_currentQuery );
+    //Nepomuk::Query::QueryServiceClient::syncQuery( test );
     QList<Nepomuk::Resource> resource;
     Q_FOREACH( const Nepomuk::Query::Result& result, results ) {
         resource.append( result.resource() );

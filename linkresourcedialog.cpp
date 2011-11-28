@@ -35,7 +35,7 @@
 #include <KIcon>
 #include <KEditListBox>
 
-/*//Nepomuk Includes
+//Nepomuk Includes
 #include <Nepomuk/Query/Term>
 #include <Nepomuk/Query/Result>
 #include <Nepomuk/Query/ResourceTypeTerm>
@@ -53,17 +53,18 @@
 #include<Nepomuk/Utils/FacetWidget>
 #include <Soprano/QueryResultIterator>
 #include <Soprano/Model>
-#include <Nepomuk/Query/AndTerm>
+#include <Nepomuk/Query/OrTerm>
 #include <Nepomuk/File>
-#include <Nepomuk/Utils/SimpleResourceModel>*/
+#include <Nepomuk/Utils/SimpleResourceModel>
 
 
 LinkResourceDialog::LinkResourceDialog(Nepomuk::Resource resource,QWidget* parent):KDialog(parent)
 {
     setWindowTitle(i18n("Resource Link Dialog"));
     setWindowIcon(KIcon("nepomuk"));
-    setButtonText(Ok,i18n("&Link"));
+    setButtonText(Ok,i18n("&Ok"));
     m_mainResource = resource;
+    connect(this,SIGNAL(okClicked()),this,SLOT(slotLinkResources()));
     setUpGui();
 }
 
@@ -77,25 +78,108 @@ void LinkResourceDialog::setUpGui()
     m_resourceSearch->setPlaceholderText(i18n("Search for resources"));
     vbLayout->addWidget(resourceName);
     vbLayout->addWidget(m_resourceSearch);
-    QListWidget* resourceList = new QListWidget(mainWidget());
-    vbLayout->addWidget(resourceList);
-    resourceList->setViewMode(resourceList->IconMode);
+    connect(m_resourceSearch,SIGNAL(textChanged(QString)),this,SLOT(slotTriggerSearch(QString)));
+
+    m_resourceList = new QListWidget(mainWidget());
+    vbLayout->addWidget(m_resourceList);
+    //m_resourceList->setViewMode(m_resourceList->IconMode);
 
     Q_FOREACH(Nepomuk::Resource resource, getLinkedResources()) {
-        QListWidgetItem* item = new QListWidgetItem(resource.genericLabel(),resourceList);
+        QListWidgetItem* item = new QListWidgetItem(resource.genericLabel(),m_resourceList);
         item->setCheckState(Qt::Checked);
+        item->setToolTip(resource.uri());
         item->setIcon(KIcon("nepomuk"));
     }
 }
 
 
-QList<Nepomuk::Resource> LinkResourceDialog::getLinkedResources()
-{
-    return (m_mainResource.isRelatedOf());
-}
-
 LinkResourceDialog::~LinkResourceDialog()
 {
+}
+
+
+QList<Nepomuk::Resource> LinkResourceDialog::getLinkedResources()
+{
+    return (m_mainResource.isRelateds());
+}
+
+
+void LinkResourceDialog::slotTriggerSearch(QString str)
+{
+    m_resourceList->clear();
+    QString regex = QRegExp::escape(str);
+           regex.replace("\\*", QLatin1String(".*"));
+           regex.replace("\\?", QLatin1String("."));
+           regex.replace("\\", "\\\\");
+    Nepomuk::Query::ComparisonTerm linkTerm(
+                       Nepomuk::Vocabulary::NFO::fileName(),
+                       Nepomuk::Query::LiteralTerm(regex),
+                       Nepomuk::Query::ComparisonTerm::Regexp);
+    Nepomuk::Query::ComparisonTerm term(Soprano::Vocabulary::NAO::prefLabel(),Nepomuk::Query::LiteralTerm(str));
+    //Nepomuk::Query::Query test(temp);
+    Nepomuk::Query::OrTerm queryTerm( linkTerm,term );
+    Nepomuk::Query::Query query(queryTerm);
+    query.setLimit(50);
+
+    QList<Nepomuk::Query::Result>results = Nepomuk::Query::QueryServiceClient::syncQuery( query );
+    //Nepomuk::Query::QueryServiceClient::syncQuery( test );
+    QList<Nepomuk::Resource> resource;
+    Q_FOREACH( const Nepomuk::Query::Result& result, results ) {
+        resource.append( result.resource() );
+    }
+
+    Q_FOREACH(Nepomuk::Resource rsc, resource) {
+        QListWidgetItem* item = new QListWidgetItem(rsc.genericLabel(),m_resourceList);
+        item->setToolTip(rsc.uri());
+        if(m_mainResource.isRelatedOf().contains(rsc)) {
+            item->setCheckState(Qt::Checked);
+        }
+        else {
+            item->setCheckState(Qt::Unchecked);
+        }
+        if(rsc.className().compare("Folder") == 0) {
+            item->setIcon(KIcon("folder-blue"));
+        }
+        else if(rsc.className().compare("Photo") == 0) {
+            item->setIcon(KIcon("image-x-generic"));
+        }
+        else if(rsc.className().compare("Document") == 0) {
+            item->setIcon(KIcon("libreoffice34-oasis-master-document"));
+        }
+        else if(rsc.className().compare("MusicPiece") == 0) {
+            item->setIcon(KIcon("audio-ac3"));
+        }
+        else if(rsc.className().compare("InformationElement") == 0) {
+            item->setIcon(KIcon("video-x-generic"));
+        }
+        else if(rsc.className().compare("TextDocument") == 0) {
+            item->setIcon(KIcon("text-x-generic"));
+        }
+        else if(rsc.className().compare("PaginatedTextDocument") == 0) {
+            item->setIcon(KIcon("application-pdf"));
+        }
+        else if(rsc.className().compare("Archive") == 0) {
+            item->setIcon(KIcon("application-x-archive"));
+        }
+        else {
+            item->setIcon(KIcon("nepomuk"));
+        }
+
+    }
+}
+
+void LinkResourceDialog::slotLinkResources()
+{
+    int count = m_resourceList->count();
+    for(int i=0;i<count;i++) {
+        QListWidgetItem *item = m_resourceList->item(i);
+        if(item->checkState() == Qt::Checked) {
+            QString resourceUri = item->toolTip();
+            Nepomuk::Resource resource = (QUrl)resourceUri;
+            m_mainResource.addIsRelated( resource );
+        }
+
+    }
 }
 
 #include "linkresourcedialog.moc"
