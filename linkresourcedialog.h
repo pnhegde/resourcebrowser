@@ -24,6 +24,7 @@
 #define LINKRESOURCEDIALOG_H
 
 #include <QListWidget>
+
 //KDE includes
 #include <KDialog>
 #include <KLineEdit>

@@ -88,7 +88,6 @@ void LinkResourceDialog::setUpGui()
         QListWidgetItem* item = new QListWidgetItem(resource.genericLabel(),m_resourceList);
         item->setCheckState(Qt::Checked);
         item->setToolTip(resource.uri());
-        item->setIcon(KIcon("nepomuk"));
     }
 }
 
@@ -119,7 +118,7 @@ void LinkResourceDialog::slotTriggerSearch(QString str)
     //Nepomuk::Query::Query test(temp);
     Nepomuk::Query::OrTerm queryTerm( linkTerm,term );
     Nepomuk::Query::Query query(queryTerm);
-    query.setLimit(50);
+    query.setLimit(20);
 
     QList<Nepomuk::Query::Result>results = Nepomuk::Query::QueryServiceClient::syncQuery( query );
     //Nepomuk::Query::QueryServiceClient::syncQuery( test );
@@ -142,24 +141,35 @@ void LinkResourceDialog::slotTriggerSearch(QString str)
         }
         else if(rsc.className().compare("Photo") == 0) {
             item->setIcon(KIcon("image-x-generic"));
+            rsc.addSymbol("image-x-generic");
         }
         else if(rsc.className().compare("Document") == 0) {
             item->setIcon(KIcon("libreoffice34-oasis-master-document"));
+            rsc.addSymbol("libreoffice34-oasis-master-document");
         }
         else if(rsc.className().compare("MusicPiece") == 0) {
             item->setIcon(KIcon("audio-ac3"));
+            rsc.addSymbol("audio-ac3");
         }
         else if(rsc.className().compare("InformationElement") == 0) {
             item->setIcon(KIcon("video-x-generic"));
+            rsc.addSymbol("video-x-generic");
         }
         else if(rsc.className().compare("TextDocument") == 0) {
             item->setIcon(KIcon("text-x-generic"));
+            rsc.addSymbol("text-x-generic");
         }
         else if(rsc.className().compare("PaginatedTextDocument") == 0) {
             item->setIcon(KIcon("application-pdf"));
+            rsc.addSymbol("application-pdf");
         }
         else if(rsc.className().compare("Archive") == 0) {
             item->setIcon(KIcon("application-x-archive"));
+            rsc.addSymbol("application-x-archive");
+        }
+        else if(rsc.className().compare("Person") == 0) {
+            item->setIcon(KIcon("x-office-contact"));
+            rsc.addSymbol("x-office-contact");
         }
         else {
             item->setIcon(KIcon("nepomuk"));

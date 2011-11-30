@@ -32,18 +32,19 @@
 #include <KXmlGuiWindow>
 #include <KAction>
 #include <KLineEdit>
+#include <KUrl>
 
 //Nepomuk includes
 #include <Nepomuk/Utils/SimpleResourceModel>
 #include <Nepomuk/Query/Term>
 #include <Nepomuk/Query/Query>
 
-class resourceBrowser : public KXmlGuiWindow
+class ResourceBrowser : public KXmlGuiWindow
 {
     Q_OBJECT
 public:
-    resourceBrowser();
-    virtual ~resourceBrowser();
+    ResourceBrowser();
+    virtual ~ResourceBrowser();
 
 private:
     void buildCentralUI();
@@ -54,8 +55,11 @@ private:
     QList<Nepomuk::Resource> contentResourceSearch( const QString str );
     QList<Nepomuk::Resource> nameResourceSearch( const QString str );
     QList<Nepomuk::Resource> typeResourceSearch( const QString str );
-    void mySort(QList<Nepomuk::Resource> &resources);
-
+    void resourceSort(QList<Nepomuk::Resource> &resources);
+    void updateLinkedResources();
+    //void addIconToResource(Nepomuk::Resource*);
+signals:
+    void sigShowProperties(KUrl);
 private slots:
     void slotTriggerSearch( QString );
     void slotLinkedResources();
@@ -63,9 +67,16 @@ private slots:
     void slotOpenResource( QModelIndex );
     void slotOpenRecommendedResource( QModelIndex );
     void slotOpenLinkedResource( QModelIndex );
-    void slotShowResourceContextMenu( const QPoint& );
+    void slotResourceContextMenu( const QPoint& );
     void slotManualLinkResources();
-
+    void slotLinkedResourceContextMenu(const QPoint&);
+    void slotRecommendedResourceContextMenu(const QPoint&);
+    void slotUnlinkResource();
+    void slotRecommendedResources();
+    void slotShowProperties(KUrl);
+    void slotEmitResourceProperty();
+    void slotEmitRecommendedResourceProperty();
+    void slotEmitLinkedResourceProperty();
 private:
 
     QWidget* m_mainWidget;
@@ -79,7 +90,9 @@ private:
     QToolButton* m_resourceTypeButton;
 
     KLineEdit* m_searchBox;
-    KAction* m_openResourceAction;
+
+    KAction *m_unlinkAction;
+    KAction *m_propertyAction;
 
     Nepomuk::Utils::SimpleResourceModel* m_resourceViewModel;
     Nepomuk::Utils::SimpleResourceModel* m_recommendationViewModel;

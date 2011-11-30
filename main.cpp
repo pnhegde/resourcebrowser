@@ -49,12 +49,11 @@ int main(int argc, char **argv)
     KCmdLineArgs::addCmdLineOptions(options);
     KApplication app;
 
-    resourceBrowser *widget = new resourceBrowser;
-
+    ResourceBrowser *widget = new ResourceBrowser() ;
     // see if we are starting with session management
     if (app.isSessionRestored())
     {
-        RESTORE(resourceBrowser);
+        RESTORE(ResourceBrowser);
     }
     else
     {
