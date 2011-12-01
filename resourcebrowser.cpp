@@ -48,6 +48,7 @@
 #include <QLabel>
 
 //Nepomuk Includes
+#include <Nepomuk/ResourceManager>
 #include <Nepomuk/Query/Term>
 #include <Nepomuk/Query/Result>
 #include <Nepomuk/Query/ResourceTypeTerm>
@@ -74,6 +75,7 @@
 ResourceBrowser::ResourceBrowser() :
     KXmlGuiWindow()
 {
+    Nepomuk::ResourceManager::instance()->init();
     setWindowTitle(i18n("Resource Browser"));
     setWindowIcon(KIcon("nepomuk"));
 
@@ -426,7 +428,7 @@ void ResourceBrowser::populateDefaultResources()
         QList<Nepomuk::Query::Result> results = Nepomuk::Query::QueryServiceClient::syncQuery( m_currentQuery );
         QList<Nepomuk::Resource> resources;
         Q_FOREACH( const Nepomuk::Query::Result& result,results) {
-            result.resource().addSymbol("nepomuk");
+            addIconToResource(result.resource());
             qDebug()<<result.resource().genericIcon();
             resources.append( result.resource() );
         }
@@ -434,38 +436,43 @@ void ResourceBrowser::populateDefaultResources()
         m_resourceViewModel->setResources( resources );
 
 }
-/*
-void ResourceBrowser::addIconToResource(Nepomuk::Resource *rsc)
+
+void ResourceBrowser::addIconToResource(Nepomuk::Resource rsc)
 {
-    if(rsc->className().compare("Folder") == 0) {
-        rsc.addSymbol("folder-blue");
-    }/*
-    else if(rsc.className().compare("Photo") == 0) {
-        rsc.addSymbol("image-x-generic");
-    }
-    else if(rsc.className().compare("Document") == 0) {
-        rsc.addSymbol("libreoffice34-oasis-master-document");
-    }
-    else if(rsc.className().compare("MusicPiece") == 0) {
-        rsc.addSymbol("audio-ac3");
-    }
-    else if(rsc.className().compare("InformationElement") == 0) {
-        rsc.addSymbol("video-x-generic");
-    }
-    else if(rsc.className().compare("TextDocument") == 0) {
-        rsc.addSymbol("text-x-generic");
-    }
-    else if(rsc.className().compare("PaginatedTextDocument") == 0) {
-        rsc.addSymbol("application-pdf");
-    }
-    else if(rsc.className().compare("Archive") == 0) {
-        rsc.addSymbol("application-x-archive");
-    }
-    else {
-        rsc.addSymbol("folder-blue");
+    if(rsc.genericIcon().isEmpty()) {
+        if(rsc.className().compare("Folder") == 0) {
+            rsc.addSymbol("folder-blue");
+        }
+        else if(rsc.className().compare("Photo") == 0) {
+            rsc.addSymbol("image-x-generic");
+        }
+        else if(rsc.className().compare("Document") == 0) {
+            rsc.addSymbol("libreoffice34-oasis-master-document");
+        }
+        else if(rsc.className().compare("MusicPiece") == 0) {
+            rsc.addSymbol("audio-ac3");
+        }
+        else if(rsc.className().compare("InformationElement") == 0) {
+            rsc.addSymbol("video-x-generic");
+        }
+        else if(rsc.className().compare("TextDocument") == 0) {
+            rsc.addSymbol("text-x-generic");
+        }
+        else if(rsc.className().compare("PaginatedTextDocument") == 0) {
+            rsc.addSymbol("application-pdf");
+        }
+        else if(rsc.className().compare("Archive") == 0) {
+            rsc.addSymbol("application-x-archive");
+        }
+        else if(rsc.className().compare("Person") == 0){
+            rsc.addSymbol("user-identity");
+        }
+        else if(rsc.className().compare("Website") == 0) {
+            rsc.addSymbol("text-html");
+        }
     }
 }
-*/
+
 void ResourceBrowser::resourceSort(QList<Nepomuk::Resource> &resources)
 {
     for (int i=0; i<resources.size()-1; i++) {
@@ -525,6 +532,7 @@ QList<Nepomuk::Resource> ResourceBrowser::nameResourceSearch(const QString str)
     //Nepomuk::Query::QueryServiceClient::syncQuery( test );
     QList<Nepomuk::Resource> resource;
     Q_FOREACH( const Nepomuk::Query::Result& result, results ) {
+        addIconToResource(result.resource());
         resource.append( result.resource() );
     }
     resourceSort(resource);
@@ -565,6 +573,7 @@ QList<Nepomuk::Resource> ResourceBrowser:: typeResourceSearch(const QString str)
     QList<Nepomuk::Query::Result>results = Nepomuk::Query::QueryServiceClient::syncQuery( m_currentQuery );
     QList<Nepomuk::Resource> resource;
     Q_FOREACH( const Nepomuk::Query::Result& result, results ) {
+        addIconToResource(result.resource());
         resource.append( result.resource() );
     }
     resourceSort(resource);

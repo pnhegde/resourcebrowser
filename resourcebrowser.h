@@ -57,7 +57,7 @@ private:
     QList<Nepomuk::Resource> typeResourceSearch( const QString str );
     void resourceSort(QList<Nepomuk::Resource> &resources);
     void updateLinkedResources();
-    //void addIconToResource(Nepomuk::Resource*);
+    void addIconToResource(Nepomuk::Resource);
 signals:
     void sigShowProperties(KUrl);
 private slots:
