@@ -77,6 +77,7 @@ private slots:
     void slotEmitResourceProperty();
     void slotEmitRecommendedResourceProperty();
     void slotEmitLinkedResourceProperty();
+    void slotRemoveDuplicates();
 private:
 
     QWidget* m_mainWidget;
@@ -90,7 +91,6 @@ private:
     QToolButton* m_resourceTypeButton;
 
     KLineEdit* m_searchBox;
-
     KAction *m_unlinkAction;
     KAction *m_propertyAction;
 

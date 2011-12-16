@@ -22,6 +22,7 @@
 //Local includes
 #include "resourcebrowser.h"
 #include "linkresourcedialog.h"
+#include "removeduplicates.h"
 
 //KDE Includes
 #include <KXmlGuiWindow>
@@ -129,6 +130,7 @@ void ResourceBrowser::setupDockWidgets()
     m_removeDuplicateButton->setIcon(KIcon("archive-remove"));
     m_removeDuplicateButton->setText(i18n("Remove Duplicates"));
     m_removeDuplicateButton->setFlat(true);
+    connect(m_removeDuplicateButton, SIGNAL(clicked()), this, SLOT(slotRemoveDuplicates()));
     buttonLayout->addWidget(m_manualLinkResourceButton);
     buttonLayout->addWidget(m_removeDuplicateButton);
     dock->setWidget(buttonWidget);
@@ -197,9 +199,6 @@ void ResourceBrowser::setupActions()
     m_unlinkAction = new KAction(this);
     m_unlinkAction->setText(i18n("&Unlink resource"));
     m_unlinkAction->setIcon(KIcon("edit-delete"));
-
-
-
 }
 
 
@@ -215,19 +214,11 @@ void ResourceBrowser::setupModels()
     m_linkedResourceViewModel = new Nepomuk::Utils::SimpleResourceModel(this);
     m_linkedResourceView->setModel(m_linkedResourceViewModel);
     connect(m_linkedResourceView,SIGNAL(doubleClicked(QModelIndex)),this,SLOT(slotOpenLinkedResource(QModelIndex)));
-
 }
 
 
 void ResourceBrowser::slotOpenResource(QModelIndex selectedResource)
-{/*
-    KUrl url = (m_linkedResourceViewModel->resourceForIndex(m_linkedResourceView->selectionModel()->currentIndex())).property(Nepomuk::Vocabulary::NIE::url()).toString();
-    if(url.isEmpty()) {
-       url= (m_recommendationViewModel->resourceForIndex(m_recommendationView->selectionModel()->currentIndex())).property(Nepomuk::Vocabulary::NIE::url()).toString();
-    }
-    if(url.isEmpty()) {
-        url= (m_resourceViewModel->resourceForIndex(m_resourceView->selectionModel()->currentIndex())).property(Nepomuk::Vocabulary::NIE::url()).toString();
-    }*/
+{
     m_resourceView->selectionModel()->setCurrentIndex(selectedResource,QItemSelectionModel::NoUpdate);
     Nepomuk::Resource currentResource = (m_resourceViewModel->resourceForIndex(
                                              m_resourceView->selectionModel()->currentIndex()));
@@ -237,7 +228,6 @@ void ResourceBrowser::slotOpenResource(QModelIndex selectedResource)
         new KRun(url,this);
         currentResource.increaseUsageCount();
     }
-    //krun(url);
 }
 
 
@@ -252,6 +242,7 @@ void ResourceBrowser::slotOpenRecommendedResource(QModelIndex selectedResource)
         new KRun(url,this);
         currentResource.increaseUsageCount();
     }
+
 }
 
 
@@ -287,6 +278,7 @@ void ResourceBrowser::slotRecommendedResources()
         m_recommendationViewModel->setResources(contentResourceSearch(resource.label()));
     }
 }
+
 
 void ResourceBrowser::slotTriggerSearch( const QString str)
 {
@@ -339,6 +331,7 @@ void ResourceBrowser::slotResourceContextMenu(const QPoint &pos)
     myMenu.exec(globalPos);
 }
 
+
 void ResourceBrowser::slotRecommendedResourceContextMenu(const QPoint &pos)
 {
     m_propertyAction = new KAction(this);
@@ -354,7 +347,6 @@ void ResourceBrowser::slotRecommendedResourceContextMenu(const QPoint &pos)
 
 void ResourceBrowser::slotLinkedResourceContextMenu(const QPoint& pos )
 {
-
     m_propertyAction = new KAction(this);
     m_propertyAction->setText(i18n("&Properties"));
     m_propertyAction->setIcon(KIcon("documentinfo"));
@@ -369,12 +361,14 @@ void ResourceBrowser::slotLinkedResourceContextMenu(const QPoint& pos )
     linkedResourceMenu.exec(globalPos);
 }
 
+
 void ResourceBrowser:: slotEmitLinkedResourceProperty()
 {
     KUrl url = (KUrl)m_linkedResourceViewModel->resourceForIndex(m_linkedResourceView->selectionModel()->currentIndex()).uri() ;
     qDebug()<<"url is "<<url;
     emit sigShowProperties(url);
 }
+
 
 void ResourceBrowser::slotEmitRecommendedResourceProperty()
 {
@@ -383,12 +377,14 @@ void ResourceBrowser::slotEmitRecommendedResourceProperty()
     emit sigShowProperties(url);
 }
 
+
 void ResourceBrowser::slotEmitResourceProperty()
 {
     KUrl url = (KUrl)m_resourceViewModel->resourceForIndex(m_resourceView->selectionModel()->currentIndex()).uri() ;
     qDebug()<<"url is "<<url;
     emit sigShowProperties(url);
 }
+
 
 void ResourceBrowser::slotShowProperties(KUrl url)
 {
@@ -404,6 +400,7 @@ void ResourceBrowser::slotManualLinkResources()
     updateLinkedResources();
 }
 
+
 void ResourceBrowser::slotUnlinkResource()
 {
     m_resourceViewModel->resourceForIndex(m_resourceView->selectionModel()->currentIndex() ).removeProperty(
@@ -412,30 +409,34 @@ void ResourceBrowser::slotUnlinkResource()
     updateLinkedResources();
 }
 
+
+void ResourceBrowser::slotRemoveDuplicates()
+{
+    RemoveDuplicates *duplicates = new RemoveDuplicates();
+    duplicates->exec();
+}
+
+
 void ResourceBrowser::populateDefaultResources()
 {
-        m_resourceViewModel->clear();
-//        Nepomuk::Query::ComparisonTerm term
-//             = Nepomuk::Vocabulary::NIE::lastModified() > Nepomuk::Query::LiteralTerm( QDateTime::currentDateTime().addDays(-7) );
-
-        Nepomuk::Query::Term term =  Nepomuk::Query::ResourceTypeTerm( Nepomuk::Vocabulary::NFO::Website() );
-
-        m_currentQuery.setTerm(term);
-        m_currentQuery = m_currentQuery || Nepomuk::Query::ResourceTypeTerm(Nepomuk::Vocabulary::PIMO::Person() );
-        m_currentQuery = m_currentQuery || Nepomuk::Query::ResourceTypeTerm(Nepomuk::Vocabulary::NFO::PaginatedTextDocument() );
-        m_currentQuery = m_currentQuery || Nepomuk::Query::ResourceTypeTerm(Nepomuk::Vocabulary::NFO::Presentation() );
-        m_currentQuery.setLimit( 35 );
-        QList<Nepomuk::Query::Result> results = Nepomuk::Query::QueryServiceClient::syncQuery( m_currentQuery );
-        QList<Nepomuk::Resource> resources;
-        Q_FOREACH( const Nepomuk::Query::Result& result,results) {
-            addIconToResource(result.resource());
-            qDebug()<<result.resource().genericIcon();
-            resources.append( result.resource() );
-        }
-        resourceSort(resources);
-        m_resourceViewModel->setResources( resources );
-
+    m_resourceViewModel->clear();
+    Nepomuk::Query::Term term =  Nepomuk::Query::ResourceTypeTerm( Nepomuk::Vocabulary::NFO::Website() );
+    m_currentQuery.setTerm(term);
+    m_currentQuery = m_currentQuery || Nepomuk::Query::ResourceTypeTerm(Nepomuk::Vocabulary::PIMO::Person() );
+    m_currentQuery = m_currentQuery || Nepomuk::Query::ResourceTypeTerm(Nepomuk::Vocabulary::NFO::PaginatedTextDocument() );
+    m_currentQuery = m_currentQuery || Nepomuk::Query::ResourceTypeTerm(Nepomuk::Vocabulary::NFO::Presentation() );
+    m_currentQuery.setLimit( 35 );
+    QList<Nepomuk::Query::Result> results = Nepomuk::Query::QueryServiceClient::syncQuery( m_currentQuery );
+    QList<Nepomuk::Resource> resources;
+    Q_FOREACH( const Nepomuk::Query::Result& result,results) {
+        addIconToResource(result.resource());
+        qDebug()<<result.resource().genericIcon();
+        resources.append( result.resource() );
+    }
+    resourceSort(resources);
+    m_resourceViewModel->setResources( resources );
 }
+
 
 void ResourceBrowser::addIconToResource(Nepomuk::Resource rsc)
 {
@@ -473,6 +474,7 @@ void ResourceBrowser::addIconToResource(Nepomuk::Resource rsc)
     }
 }
 
+
 void ResourceBrowser::resourceSort(QList<Nepomuk::Resource> &resources)
 {
     for (int i=0; i<resources.size()-1; i++) {
@@ -486,19 +488,11 @@ void ResourceBrowser::resourceSort(QList<Nepomuk::Resource> &resources)
     }
 }
 
+
 QList<Nepomuk::Resource> ResourceBrowser::contentResourceSearch(const QString str)
  {
      Nepomuk::Query::ComparisonTerm linkTerm(Nepomuk::Vocabulary::NIE::plainTextContent(), Nepomuk::Query::LiteralTerm(str));
-
-    //linkTerm.setVariableName(QLatin1String("text"));
-     //Nepomuk::Query::Query query(linkTerm);
-       m_currentQuery.setTerm(linkTerm);
-
-     //query.addRequestProperty(Nepomuk::Query::Query::RequestProperty(Nepomuk::Vocabulary::NIE::lastModified()));
-
-//     if(limit != 0) {
-//         query.setLimit(limit);
-//     }
+     m_currentQuery.setTerm(linkTerm);
      m_currentQuery.setLimit(25);
      QList<Nepomuk::Query::Result>results = Nepomuk::Query::QueryServiceClient::syncQuery( m_currentQuery );
      QList<Nepomuk::Resource> resource;
@@ -512,8 +506,6 @@ QList<Nepomuk::Resource> ResourceBrowser::contentResourceSearch(const QString st
 
 QList<Nepomuk::Resource> ResourceBrowser::nameResourceSearch(const QString str)
 {
-    //Nepomuk::Query::ComparisonTerm linkTerm( Nepomuk::Vocabulary::NFO::fileName(), Nepomuk::Query::LiteralTerm(str));
-
     QString regex = QRegExp::escape(str);
            regex.replace("\\*", QLatin1String(".*"));
            regex.replace("\\?", QLatin1String("."));
@@ -523,13 +515,11 @@ QList<Nepomuk::Resource> ResourceBrowser::nameResourceSearch(const QString str)
                        Nepomuk::Query::LiteralTerm(regex),
                        Nepomuk::Query::ComparisonTerm::Regexp);
     Nepomuk::Query::ComparisonTerm temp(Soprano::Vocabulary::NAO::prefLabel(),Nepomuk::Query::LiteralTerm(str));
-    //Nepomuk::Query::Query test(temp);
     Nepomuk::Query::OrTerm query( linkTerm,temp );
     m_currentQuery.setTerm(query);
     m_currentQuery.setLimit(50);
 
     QList<Nepomuk::Query::Result>results = Nepomuk::Query::QueryServiceClient::syncQuery( m_currentQuery );
-    //Nepomuk::Query::QueryServiceClient::syncQuery( test );
     QList<Nepomuk::Resource> resource;
     Q_FOREACH( const Nepomuk::Query::Result& result, results ) {
         addIconToResource(result.resource());
@@ -567,7 +557,16 @@ QList<Nepomuk::Resource> ResourceBrowser:: typeResourceSearch(const QString str)
         qDebug()<<"Found";
         linkTerm =  Nepomuk::Query::ResourceTypeTerm( Nepomuk::Vocabulary::NFO::Document() );
     }
+    else if(str.contains("java") ) {
+        qDebug()<<"Found";
+        QString regex = ".java$";
+        regex.replace("\\*", QLatin1String(".*"));
+        regex.replace("\\?", QLatin1String("."));
+        regex.replace("\\", "\\\\");
+        linkTerm =  Nepomuk::Query::ComparisonTerm( Nepomuk::Vocabulary::NFO::TextDocument(),Nepomuk::Query::LiteralTerm(regex),
+                                                    Nepomuk::Query::ComparisonTerm::Regexp);
 
+    }
     m_currentQuery.setTerm(linkTerm);
     m_currentQuery.setLimit(25);
     QList<Nepomuk::Query::Result>results = Nepomuk::Query::QueryServiceClient::syncQuery( m_currentQuery );

@@ -88,6 +88,12 @@ void LinkResourceDialog::setUpGui()
         QListWidgetItem* item = new QListWidgetItem(resource.genericLabel(),m_resourceList);
         item->setCheckState(Qt::Checked);
         item->setToolTip(resource.uri());
+        if(!resource.genericIcon().isEmpty()) {
+            item->setIcon(KIcon(resource.genericIcon()));
+        }
+        else {
+            item->setIcon(KIcon("nepomuk"));
+        }
     }
 }
 
@@ -136,59 +142,61 @@ void LinkResourceDialog::slotTriggerSearch(QString str)
         else {
             item->setCheckState(Qt::Unchecked);
         }
-        if(rsc.className().compare("Folder") == 0) {
-            item->setIcon(KIcon("folder-blue"));
-        }
-        else if(rsc.className().compare("Photo") == 0) {
-            item->setIcon(KIcon("image-x-generic"));
-            rsc.addSymbol("image-x-generic");
-        }
-        else if(rsc.className().compare("Document") == 0) {
-            item->setIcon(KIcon("libreoffice34-oasis-master-document"));
-            rsc.addSymbol("libreoffice34-oasis-master-document");
-        }
-        else if(rsc.className().compare("MusicPiece") == 0) {
-            item->setIcon(KIcon("audio-ac3"));
-            rsc.addSymbol("audio-ac3");
-        }
-        else if(rsc.className().compare("InformationElement") == 0) {
-            item->setIcon(KIcon("video-x-generic"));
-            rsc.addSymbol("video-x-generic");
-        }
-        else if(rsc.className().compare("TextDocument") == 0) {
-            item->setIcon(KIcon("text-x-generic"));
-            rsc.addSymbol("text-x-generic");
-        }
-        else if(rsc.className().compare("PaginatedTextDocument") == 0) {
-            item->setIcon(KIcon("application-pdf"));
-            rsc.addSymbol("application-pdf");
-        }
-        else if(rsc.className().compare("Archive") == 0) {
-            item->setIcon(KIcon("application-x-archive"));
-            rsc.addSymbol("application-x-archive");
-        }
-        else if(rsc.className().compare("Person") == 0) {
-            item->setIcon(KIcon("x-office-contact"));
-            rsc.addSymbol("x-office-contact");
+        if(rsc.genericIcon().isEmpty()) {
+            if(rsc.className().compare("Folder") == 0) {
+                item->setIcon(KIcon("folder-blue"));
+            }
+            else if(rsc.className().compare("Photo") == 0) {
+                item->setIcon(KIcon("image-x-generic"));
+                rsc.addSymbol("image-x-generic");
+            }
+            else if(rsc.className().compare("Document") == 0) {
+                item->setIcon(KIcon("libreoffice34-oasis-master-document"));
+                rsc.addSymbol("libreoffice34-oasis-master-document");
+            }
+            else if(rsc.className().compare("MusicPiece") == 0) {
+                item->setIcon(KIcon("audio-ac3"));
+                rsc.addSymbol("audio-ac3");
+            }
+            else if(rsc.className().compare("InformationElement") == 0) {
+                item->setIcon(KIcon("video-x-generic"));
+                rsc.addSymbol("video-x-generic");
+            }
+            else if(rsc.className().compare("TextDocument") == 0) {
+                item->setIcon(KIcon("text-x-generic"));
+                rsc.addSymbol("text-x-generic");
+            }
+            else if(rsc.className().compare("PaginatedTextDocument") == 0) {
+                item->setIcon(KIcon("application-pdf"));
+                rsc.addSymbol("application-pdf");
+            }
+            else if(rsc.className().compare("Archive") == 0) {
+                item->setIcon(KIcon("application-x-archive"));
+                rsc.addSymbol("application-x-archive");
+            }
+            else if(rsc.className().compare("Person") == 0) {
+                item->setIcon(KIcon("x-office-contact"));
+                rsc.addSymbol("x-office-contact");
+            }
+            else {
+                item->setIcon(KIcon("nepomuk"));
+            }
         }
         else {
-            item->setIcon(KIcon("nepomuk"));
+            item->setIcon(KIcon(rsc.genericIcon()));
         }
-
-    }
+     }
 }
 
 void LinkResourceDialog::slotLinkResources()
 {
-    int count = m_resourceList->count();
-    for(int i=0;i<count;i++) {
+    for(int i=0;i<m_resourceList->count();i++) {
         QListWidgetItem *item = m_resourceList->item(i);
         if(item->checkState() == Qt::Checked) {
             QString resourceUri = item->toolTip();
             Nepomuk::Resource resource = (QUrl)resourceUri;
             m_mainResource.addIsRelated( resource );
         }
-
     }
 }
 

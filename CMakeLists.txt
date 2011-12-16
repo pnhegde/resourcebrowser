@@ -20,7 +20,7 @@ set( SRCS
   main.cpp
   resourcebrowser.cpp
   linkresourcedialog.cpp
-  #  browserview.cpp
+  removeduplicates.cpp
 )
 
 #kde4_add_ui_files(SRCS
