@@ -47,6 +47,7 @@
 #include <QToolButton>
 #include <QMenu>
 #include <QLabel>
+#include <QSize>
 
 //Nepomuk Includes
 #include <Nepomuk/ResourceManager>
@@ -143,6 +144,7 @@ void ResourceBrowser::setupDockWidgets()
     searchWidget->addFacet(Nepomuk::Utils::Facet::createTypeFacet(searchWidget));
     searchWidget->addFacet(Nepomuk::Utils::Facet::createRatingFacet(searchWidget));
     searchWidget->addFacet(Nepomuk::Utils::Facet::createPriorityFacet(searchWidget));
+    searchWidget->addFacet(Nepomuk::Utils::Facet::createTagFacet(searchWidget));
     connect(searchWidget,SIGNAL(queryTermChanged(Nepomuk::Query::Term)),this,SLOT(slotFilterApplied(Nepomuk::Query::Term)));
     dock->setWidget(searchWidget);
     addDockWidget(Qt::LeftDockWidgetArea,dock);
@@ -163,7 +165,8 @@ void ResourceBrowser::buildCentralUI()
     connect(m_searchBox,SIGNAL(textChanged(QString)),this,SLOT(slotTriggerSearch(QString)));
     m_resourceView = new QListView(m_mainWidget);
     m_resourceView->setContextMenuPolicy(Qt::CustomContextMenu);
-    m_resourceView->setViewMode(m_resourceView->IconMode);
+    m_resourceView->setViewMode(m_resourceView->ListMode);
+    m_resourceView->setIconSize(QSize(42,42));
     m_resourceView->setUniformItemSizes(true);
     gLayout->addWidget(m_searchBox);
     m_resourceView->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -440,38 +443,38 @@ void ResourceBrowser::populateDefaultResources()
 
 void ResourceBrowser::addIconToResource(Nepomuk::Resource rsc)
 {
-    if(rsc.genericIcon().isEmpty()) {
-        if(rsc.className().compare("Folder") == 0) {
-            rsc.addSymbol("folder-blue");
-        }
-        else if(rsc.className().compare("Photo") == 0) {
-            rsc.addSymbol("image-x-generic");
-        }
-        else if(rsc.className().compare("Document") == 0) {
-            rsc.addSymbol("libreoffice34-oasis-master-document");
-        }
-        else if(rsc.className().compare("MusicPiece") == 0) {
-            rsc.addSymbol("audio-ac3");
-        }
-        else if(rsc.className().compare("InformationElement") == 0) {
-            rsc.addSymbol("video-x-generic");
-        }
-        else if(rsc.className().compare("TextDocument") == 0) {
-            rsc.addSymbol("text-x-generic");
-        }
-        else if(rsc.className().compare("PaginatedTextDocument") == 0) {
-            rsc.addSymbol("application-pdf");
-        }
-        else if(rsc.className().compare("Archive") == 0) {
-            rsc.addSymbol("application-x-archive");
-        }
-        else if(rsc.className().compare("Person") == 0){
-            rsc.addSymbol("user-identity");
-        }
-        else if(rsc.className().compare("Website") == 0) {
-            rsc.addSymbol("text-html");
-        }
+
+    if(rsc.className().compare("Folder") == 0) {
+        rsc.addSymbol("folder-blue");
     }
+    else if(rsc.className().compare("RasterImage") == 0) {
+        rsc.addSymbol("image-x-generic");
+    }
+    else if(rsc.className().compare("Document") == 0) {
+        rsc.addSymbol("libreoffice34-oasis-master-document");
+    }
+    else if(rsc.className().compare("Audio") == 0) {
+        rsc.addSymbol("audio-basic");
+    }
+    else if(rsc.className().compare("InformationElement") == 0) {
+        rsc.addSymbol("video-x-generic");
+    }
+    else if(rsc.className().compare("TextDocument") == 0) {
+        rsc.addSymbol("text-x-generic");
+    }
+    else if(rsc.className().compare("PaginatedTextDocument") == 0) {
+        rsc.addSymbol("application-pdf");
+    }
+    else if(rsc.className().compare("Archive") == 0) {
+        rsc.addSymbol("application-x-archive");
+    }
+    else if(rsc.className().compare("Person") == 0){
+        rsc.addSymbol("user-identity");
+    }
+    else if(rsc.className().compare("Website") == 0) {
+        rsc.addSymbol("text-html");
+    }
+
 }
 
 
