@@ -68,6 +68,7 @@ void RemoveDuplicates::loadDuplicates()
         QListWidgetItem* item = new QListWidgetItem(tempRsc.genericLabel() + ":: Usage Count:" + usagecount,m_resourceList);
         item->setCheckState(Qt::Unchecked);
         item->setToolTip(tempRsc.url().path());
+        item->setIcon(KIcon(tempRsc.genericIcon()));
         qDebug()<<tempRsc.url().path();
     }
 

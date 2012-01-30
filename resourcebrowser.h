@@ -55,6 +55,7 @@ private:
     QList<Nepomuk::Resource> contentResourceSearch( const QString str );
     QList<Nepomuk::Resource> nameResourceSearch( const QString str );
     QList<Nepomuk::Resource> typeResourceSearch( const QString str );
+    QList<Nepomuk::Resource> getTaggedResources( );
     void resourceSort(QList<Nepomuk::Resource> &resources);
     void updateLinkedResources();
     void addIconToResource(Nepomuk::Resource);

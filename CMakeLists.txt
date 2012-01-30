@@ -42,7 +42,7 @@ target_link_libraries( resourcebrowser
   )
 
 install(TARGETS resourcebrowser
-        DESTINATION ${PLUGIN_INSTALL_DIR})
+	${INSTALL_TARGETS_DEFAULT_ARGS})
 #install(FILES resourcebrowser.desktop DESTINATION ${SERVICES_INSTALL_DIR})
 
 #install(PROGRAMS resourcebrowser.desktop DESTINATION ${XDG_APPS_INSTALL_DIR})

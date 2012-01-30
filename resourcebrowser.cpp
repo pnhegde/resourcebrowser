@@ -274,11 +274,16 @@ void ResourceBrowser::slotLinkedResources()
 
 void ResourceBrowser::slotRecommendedResources()
 {
-
     Nepomuk::Resource resource = m_resourceViewModel->resourceForIndex(m_resourceView->selectionModel()->currentIndex() );
 
     if(!resource.label().isEmpty()) {
-        m_recommendationViewModel->setResources(contentResourceSearch(resource.label()));
+        QList<Nepomuk::Resource> result = contentResourceSearch(resource.label());
+//        Nepomuk::Resource* taggedResource = new Nepomuk::Resource(this);
+//        Q_FOREACH(Nepomuk::Tag tag,resource.tags()) {
+//            if(taggedResource->tags().contains())
+//            result.append()
+            m_recommendationViewModel->setResources(result);
+        //}
     }
 }
 
@@ -427,7 +432,7 @@ void ResourceBrowser::populateDefaultResources()
     m_currentQuery.setTerm(term);
     m_currentQuery = m_currentQuery || Nepomuk::Query::ResourceTypeTerm(Nepomuk::Vocabulary::PIMO::Person() );
     m_currentQuery = m_currentQuery || Nepomuk::Query::ResourceTypeTerm(Nepomuk::Vocabulary::NFO::PaginatedTextDocument() );
-    m_currentQuery = m_currentQuery || Nepomuk::Query::ResourceTypeTerm(Nepomuk::Vocabulary::NFO::Presentation() );
+    m_currentQuery = m_currentQuery || Nepomuk::Query::ResourceTypeTerm(Nepomuk::Vocabulary::NFO::Video() );
     m_currentQuery.setLimit( 35 );
     QList<Nepomuk::Query::Result> results = Nepomuk::Query::QueryServiceClient::syncQuery( m_currentQuery );
     QList<Nepomuk::Resource> resources;
@@ -466,7 +471,7 @@ void ResourceBrowser::addIconToResource(Nepomuk::Resource rsc)
         rsc.addSymbol("application-pdf");
     }
     else if(rsc.className().compare("Archive") == 0) {
-        rsc.addSymbol("application-x-archive");
+        rsc.addSymbol("application-x-compressed");
     }
     else if(rsc.className().compare("Person") == 0){
         rsc.addSymbol("user-identity");
@@ -536,29 +541,28 @@ QList<Nepomuk::Resource> ResourceBrowser::nameResourceSearch(const QString str)
 QList<Nepomuk::Resource> ResourceBrowser:: typeResourceSearch(const QString str)
 {
     Nepomuk::Query::Term linkTerm;
+    m_currentQuery.setLimit(50);
     if(str.contains("music") || str.contains("songs") || str.contains("audio")) {
-        qDebug()<<"Found";
         linkTerm =  Nepomuk::Query::ResourceTypeTerm( Nepomuk::Vocabulary::NFO::Audio() );
     }
     else if(str.contains("photo") || str.contains("picture") || str.contains("image")) {
-        qDebug()<<"Found";
         linkTerm =  Nepomuk::Query::ResourceTypeTerm( Nepomuk::Vocabulary::NFO::Image() );
     }
     else if(str.contains("archive") || str.contains("compressed") ) {
-        qDebug()<<"Found";
         linkTerm =  Nepomuk::Query::ResourceTypeTerm( Nepomuk::Vocabulary::NFO::Archive() );
     }
     else if(str.contains("pdf")) {
-        qDebug()<<"Found";
         linkTerm =  Nepomuk::Query::ResourceTypeTerm( Nepomuk::Vocabulary::NFO::PaginatedTextDocument() );
     }
     else if(str.contains("ppt") || str.contains("presentation")) {
-        qDebug()<<"Found";
         linkTerm =  Nepomuk::Query::ResourceTypeTerm( Nepomuk::Vocabulary::NFO::Presentation() );
     }
     else if(str.contains("text") || str.contains("txt") || str.contains("document") || str.contains("doc")  ) {
-        qDebug()<<"Found";
         linkTerm =  Nepomuk::Query::ResourceTypeTerm( Nepomuk::Vocabulary::NFO::Document() );
+    }
+    else if(str.contains("contact") || str.contains("person") ) {
+        m_currentQuery.setLimit(200);
+        linkTerm =  Nepomuk::Query::ResourceTypeTerm( Nepomuk::Vocabulary::NCO::PersonContact() );
     }
     else if(str.contains("java") ) {
         qDebug()<<"Found";
@@ -571,7 +575,6 @@ QList<Nepomuk::Resource> ResourceBrowser:: typeResourceSearch(const QString str)
 
     }
     m_currentQuery.setTerm(linkTerm);
-    m_currentQuery.setLimit(25);
     QList<Nepomuk::Query::Result>results = Nepomuk::Query::QueryServiceClient::syncQuery( m_currentQuery );
     QList<Nepomuk::Resource> resource;
     Q_FOREACH( const Nepomuk::Query::Result& result, results ) {

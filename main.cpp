@@ -35,7 +35,7 @@ static const char version[] = "1.0";
 
 int main(int argc, char **argv)
 {
-    KAboutData about("resourceBrowser", 0, ki18n("resourcebrowser"), version, ki18n(description),
+    KAboutData about("RepontiK", 0, ki18n("RepontiK"), version, ki18n(description),
                      KAboutData::License_GPL, ki18n("(C) 2011 6 Bytes more..."), KLocalizedString(), 0, "pnh.pes@gmail.com");
     about.addAuthor( ki18n("Phaneendra Hegde"), KLocalizedString(), "pnh.pes@gmail.com" );
     about.addAuthor( ki18n("Phalgun G"), KLocalizedString(), "phalgun.guduthur@gmail.com" );

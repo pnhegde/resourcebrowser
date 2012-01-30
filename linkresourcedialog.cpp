@@ -50,7 +50,7 @@
 #include <Nepomuk/Query/QueryParser>
 #include <Nepomuk/Variant>
 #include <Nepomuk/Tag>
-#include<Nepomuk/Utils/FacetWidget>
+#include <Nepomuk/Utils/FacetWidget>
 #include <Soprano/QueryResultIterator>
 #include <Soprano/Model>
 #include <Nepomuk/Query/OrTerm>
