@@ -165,6 +165,7 @@ void ResourceBrowser::buildCentralUI()
     m_mainWidget = new QWidget(this);
     QVBoxLayout *gLayout = new QVBoxLayout(m_mainWidget);
     m_mainWidget->setLayout(gLayout);
+    QHBoxLayout *hLayout = new QHBoxLayout(m_mainWidget);
     m_searchBox = new KLineEdit(m_mainWidget);
     m_searchBox->setClearButtonShown(true);
     m_searchBox->setPlaceholderText(i18n("Search for resources"));
@@ -174,7 +175,13 @@ void ResourceBrowser::buildCentralUI()
     m_resourceView->setViewMode(m_resourceView->IconMode);
     m_resourceView->setIconSize(QSize(42,42));
     m_resourceView->setUniformItemSizes(true);
-    gLayout->addWidget(m_searchBox);
+    m_resourceSelect = new QComboBox(m_mainWidget);
+    QStringList rList;
+    rList << i18n("All Resources") << i18n("Movies") << i18n("Music") << i18n("Image") << i18n("Documents") << i18n("Contacts");
+    m_resourceSelect->addItems( rList );
+    hLayout->addWidget(m_resourceSelect);
+    hLayout->addWidget(m_searchBox);
+    gLayout->addLayout(hLayout);
     m_resourceView->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(m_resourceView,SIGNAL(customContextMenuRequested(QPoint)),this,SLOT(slotResourceContextMenu(QPoint)));
     connect(m_resourceView,SIGNAL(doubleClicked(QModelIndex)),this,SLOT(slotOpenResource(QModelIndex)));

@@ -2,7 +2,6 @@ project(resourcebrowser)
 
 find_package(KDE4 REQUIRED)
 find_package(Nepomuk REQUIRED)
-find_package(NepomukExtras)
 include(MacroLibrary)
 include(SopranoAddOntology)
 include (KDE4Defaults)
@@ -31,14 +30,11 @@ kde4_add_executable(resourcebrowser ${SRCS})
 
 target_link_libraries( resourcebrowser
   nepomukutils
-  nepomukextras
   ${KDE4_KDEUI_LIBS}
   ${KDE4_KIO_LIBS}
   ${NEPOMUK_LIBRARIES}
   ${NEPOMUK_QUERY_LIBRARIES}
   ${SOPRANO_LIBRARIES}
-
-
   ${NEPOMUKEXTRAS_INCLUDE_DIR}	
   )
 

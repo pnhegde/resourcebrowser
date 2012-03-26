@@ -27,6 +27,7 @@
 #include <QPoint>
 #include <QPushButton>
 #include <QToolButton>
+#include <QComboBox>
 
 //KDE includes
 #include <KXmlGuiWindow>
@@ -93,6 +94,7 @@ private:
     QToolButton* m_resourceNameButton;
     QToolButton* m_resourceContentButton;
     QToolButton* m_resourceTypeButton;
+    QComboBox* m_resourceSelect;
 
     KLineEdit* m_searchBox;
     KAction *m_unlinkAction;
