@@ -11,7 +11,6 @@ include_directories(
   ${QT_INCLUDES}
   ${KDE4_INCLUDES}
   ${SOPRANO_INCLUDE_DIR}
-  ${NEPOMUK_INCLUDE_DIR}
   ${CMAKE_SOURCE_DIR}
   ${NEPOMUK_INCLUDE_DIR}
   )
@@ -38,6 +37,8 @@ target_link_libraries( resourcebrowser
   ${NEPOMUK_LIBRARIES}
   ${NEPOMUK_QUERY_LIBRARIES}
   ${SOPRANO_LIBRARIES}
+
+
   ${NEPOMUKEXTRAS_INCLUDE_DIR}	
   )
 

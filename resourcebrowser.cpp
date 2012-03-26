@@ -132,8 +132,14 @@ void ResourceBrowser::setupDockWidgets()
     m_removeDuplicateButton->setText(i18n("Remove Duplicates"));
     m_removeDuplicateButton->setFlat(true);
     connect(m_removeDuplicateButton, SIGNAL(clicked()), this, SLOT(slotRemoveDuplicates()));
+    m_automaticTopicButton = new QPushButton( buttonWidget );
+    m_automaticTopicButton->setIcon( KIcon("nepomuk") );
+    m_automaticTopicButton->setText( i18n("Automatic Tagging") );
+    m_automaticTopicButton->setEnabled( true );
+    m_automaticTopicButton->setFlat( true );
     buttonLayout->addWidget(m_manualLinkResourceButton);
     buttonLayout->addWidget(m_removeDuplicateButton);
+    buttonLayout->addWidget( m_automaticTopicButton );
     dock->setWidget(buttonWidget);
     dock->setFeatures(QDockWidget::NoDockWidgetFeatures);
     addDockWidget(Qt::LeftDockWidgetArea,dock);
@@ -165,7 +171,7 @@ void ResourceBrowser::buildCentralUI()
     connect(m_searchBox,SIGNAL(textChanged(QString)),this,SLOT(slotTriggerSearch(QString)));
     m_resourceView = new QListView(m_mainWidget);
     m_resourceView->setContextMenuPolicy(Qt::CustomContextMenu);
-    m_resourceView->setViewMode(m_resourceView->ListMode);
+    m_resourceView->setViewMode(m_resourceView->IconMode);
     m_resourceView->setIconSize(QSize(42,42));
     m_resourceView->setUniformItemSizes(true);
     gLayout->addWidget(m_searchBox);
@@ -202,6 +208,9 @@ void ResourceBrowser::setupActions()
     m_unlinkAction = new KAction(this);
     m_unlinkAction->setText(i18n("&Unlink resource"));
     m_unlinkAction->setIcon(KIcon("edit-delete"));
+    m_deleteAction = new KAction( this );
+    m_deleteAction->setText( i18n(" &Delete Resource") );
+    m_deleteAction->setIcon( KIcon("edit-delete"));
 }
 
 
@@ -332,10 +341,12 @@ void ResourceBrowser::slotResourceContextMenu(const QPoint &pos)
     m_propertyAction = new KAction(this);
     m_propertyAction->setText(i18n("&Properties "));
     m_propertyAction->setIcon(KIcon("documentinfo"));
-    connect(m_propertyAction,SIGNAL(triggered()),this,SLOT(slotEmitResourceProperty()));
+    connect( m_propertyAction, SIGNAL(triggered()), this, SLOT(slotEmitResourceProperty()));
+    connect( m_deleteAction, SIGNAL(triggered()), this, SLOT(slotDeleteResource()) );
     QMenu myMenu;
     QPoint globalPos = m_resourceView->mapToGlobal(pos);
     myMenu.addAction(m_propertyAction);
+    myMenu.addAction(m_deleteAction);
     myMenu.exec(globalPos);
 }
 
@@ -424,6 +435,24 @@ void ResourceBrowser::slotRemoveDuplicates()
     duplicates->exec();
 }
 
+void ResourceBrowser::slotDeleteResource()
+{
+    QMessageBox msgBox;
+    msgBox.setText("Alert");
+    msgBox.setInformativeText("Do you really want to delete this resource? ");
+    msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No );
+    msgBox.setDefaultButton(QMessageBox::No);
+    msgBox.setIcon(QMessageBox::Warning);
+    int ret = msgBox.exec();
+    if(ret == QMessageBox::Yes) {
+        qDebug()<<m_resourceViewModel->resourceForIndex(m_resourceView->selectionModel()->currentIndex()).label();
+        m_resourceViewModel->resourceForIndex(m_resourceView->selectionModel()->currentIndex()).remove();
+        //populateDefaultResources();
+        //TODO:: Populate pervious resource list, Not the default one
+        populatePreviousResourceList();
+    }
+}
+
 
 void ResourceBrowser::populateDefaultResources()
 {
@@ -432,7 +461,6 @@ void ResourceBrowser::populateDefaultResources()
     m_currentQuery.setTerm(term);
     m_currentQuery = m_currentQuery || Nepomuk::Query::ResourceTypeTerm(Nepomuk::Vocabulary::PIMO::Person() );
     m_currentQuery = m_currentQuery || Nepomuk::Query::ResourceTypeTerm(Nepomuk::Vocabulary::NFO::PaginatedTextDocument() );
-    m_currentQuery = m_currentQuery || Nepomuk::Query::ResourceTypeTerm(Nepomuk::Vocabulary::NFO::Video() );
     m_currentQuery.setLimit( 35 );
     QList<Nepomuk::Query::Result> results = Nepomuk::Query::QueryServiceClient::syncQuery( m_currentQuery );
     QList<Nepomuk::Resource> resources;
@@ -460,6 +488,9 @@ void ResourceBrowser::addIconToResource(Nepomuk::Resource rsc)
     }
     else if(rsc.className().compare("Audio") == 0) {
         rsc.addSymbol("audio-basic");
+    }
+    else if(rsc.className().compare("Video") == 0) {
+        rsc.addSymbol("video-x-generic");
     }
     else if(rsc.className().compare("InformationElement") == 0) {
         rsc.addSymbol("video-x-generic");
@@ -541,9 +572,16 @@ QList<Nepomuk::Resource> ResourceBrowser::nameResourceSearch(const QString str)
 QList<Nepomuk::Resource> ResourceBrowser:: typeResourceSearch(const QString str)
 {
     Nepomuk::Query::Term linkTerm;
-    m_currentQuery.setLimit(50);
+    //m_currentQuery.setLimit(50);
     if(str.contains("music") || str.contains("songs") || str.contains("audio")) {
-        linkTerm =  Nepomuk::Query::ResourceTypeTerm( Nepomuk::Vocabulary::NFO::Audio() );
+        linkTerm =  Nepomuk::Query::ResourceTypeTerm(Nepomuk::Vocabulary::NFO::Audio()) ||
+                                                      Nepomuk::Query::ComparisonTerm(Nepomuk::Vocabulary::NIE::mimeType(),
+                                                                                     Nepomuk::Query::LiteralTerm(QLatin1String("audio")));
+    }
+    else if(str.contains("video") || str.contains("movie")) {
+        linkTerm =  Nepomuk::Query::ResourceTypeTerm(Nepomuk::Vocabulary::NFO::Video()) ||
+                                                      Nepomuk::Query::ComparisonTerm(Nepomuk::Vocabulary::NIE::mimeType(),
+                                                                                     Nepomuk::Query::LiteralTerm(QLatin1String("video")));
     }
     else if(str.contains("photo") || str.contains("picture") || str.contains("image")) {
         linkTerm =  Nepomuk::Query::ResourceTypeTerm( Nepomuk::Vocabulary::NFO::Image() );
@@ -577,6 +615,12 @@ QList<Nepomuk::Resource> ResourceBrowser:: typeResourceSearch(const QString str)
     m_currentQuery.setTerm(linkTerm);
     QList<Nepomuk::Query::Result>results = Nepomuk::Query::QueryServiceClient::syncQuery( m_currentQuery );
     QList<Nepomuk::Resource> resource;
+    if(results.length() > 30 ) {
+        m_resourceView->setViewMode(m_resourceView->ListMode);
+    }
+    else {
+        m_resourceView->setViewMode(m_resourceView->IconMode);
+    }
     Q_FOREACH( const Nepomuk::Query::Result& result, results ) {
         addIconToResource(result.resource());
         resource.append( result.resource() );
@@ -595,5 +639,19 @@ void ResourceBrowser::updateLinkedResources()
     }
 }
 
+void ResourceBrowser::populatePreviousResourceList()
+{
+    if(! m_currentQuery.isValid()) {
+        populateDefaultResources();
+    }
+    QList<Nepomuk::Query::Result>results = Nepomuk::Query::QueryServiceClient::syncQuery( m_currentQuery );
+    QList<Nepomuk::Resource> resource;
+    Q_FOREACH( const Nepomuk::Query::Result& result, results ) {
+        addIconToResource( result.resource() );
+        resource.append( result.resource() );
+    }
+    resourceSort(resource);
+    m_resourceViewModel->setResources(resource);
+}
 
 #include "resourcebrowser.moc"

@@ -59,6 +59,7 @@ private:
     void resourceSort(QList<Nepomuk::Resource> &resources);
     void updateLinkedResources();
     void addIconToResource(Nepomuk::Resource);
+    void populatePreviousResourceList();
 signals:
     void sigShowProperties(KUrl);
 private slots:
@@ -79,6 +80,7 @@ private slots:
     void slotEmitRecommendedResourceProperty();
     void slotEmitLinkedResourceProperty();
     void slotRemoveDuplicates();
+    void slotDeleteResource();
 private:
 
     QWidget* m_mainWidget;
@@ -87,6 +89,7 @@ private:
     QListView* m_linkedResourceView;
     QPushButton* m_manualLinkResourceButton;
     QPushButton* m_removeDuplicateButton;
+    QPushButton* m_automaticTopicButton;
     QToolButton* m_resourceNameButton;
     QToolButton* m_resourceContentButton;
     QToolButton* m_resourceTypeButton;
@@ -94,6 +97,7 @@ private:
     KLineEdit* m_searchBox;
     KAction *m_unlinkAction;
     KAction *m_propertyAction;
+    KAction *m_deleteAction;
 
     Nepomuk::Utils::SimpleResourceModel* m_resourceViewModel;
     Nepomuk::Utils::SimpleResourceModel* m_recommendationViewModel;
